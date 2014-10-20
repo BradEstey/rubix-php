@@ -54,7 +54,8 @@ $pattern = $rubix->addPattern([
 // Returns an array of Estey\Rubix\Models\Pattern
 $rubix->listPattern();
 
-// Returns true if deleted and throws `Estey\Rubix\Exceptions\NotFoundException` otherwise.
+// Returns true if deleted and otherwise throws 
+// `Estey\Rubix\Exceptions\NotFoundException`.
 $rubix->deletePattern($pattern->id);
 
 ```
