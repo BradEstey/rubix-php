@@ -33,7 +33,7 @@ To get started, just instantiate a new `Estey\Rubix\Client` class, including you
 
 use Estey\Rubix\Client;
 
-$rubix = new rubix('YOUR API KEY');
+$rubix = new Client('YOUR API KEY');
 
 // Returns an array of Estey\Rubix\Models\Category
 $categories = $rubix->listCategories();
