@@ -35,8 +35,7 @@ class Client
         $access_token,
         $version = 'v1',
         $domain = 'http://api.rubix.io',
-        GuzzleHttp $client = null,
-        Pattern $pattern = null
+        GuzzleHttp $client = null
     ) {
         $this->client = $client ?: new GuzzleHttp([
             'base_url' => [
