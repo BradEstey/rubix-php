@@ -23,6 +23,18 @@ class Client
     protected $client;
 
     /**
+     * Pattern Model.
+     * @var Estey\Rubix\Models\Pattern
+     */
+    protected $pattern;
+
+    /**
+     * Category Model.
+     * @var Estey\Rubix\Models\Category
+     */
+    protected $category;
+
+    /**
      * New Rubix Client Class.
      * 
      * @param string $access_token
@@ -34,12 +46,12 @@ class Client
     public function __construct(
         $access_token,
         $version = 'v1',
-        $domain = 'http://api.rubix.io',
+        $domain = 'http://api.rubix.io/api',
         GuzzleHttp $client = null
     ) {
         $this->client = $client ?: new GuzzleHttp([
             'base_url' => [
-                $domain . '/api/{version}/', ['version' => $version]
+                $domain . '/{version}/', ['version' => $version]
             ],
             'defaults' => [
                 'headers' => ['user_key' => $access_token]
@@ -66,12 +78,11 @@ class Client
      * Make a new Category model instance.
      * 
      * @param array $data
-     * @param Estey\Rubix\Models\Category $category
      * @return Estey\Rubix\Models\Category
      */
-    protected function makeCategory($data, Category $category = null)
+    protected function makeCategory($data)
     {
-        $category = $category ?: new Category;
+        $category = $this->category ?: new Category;
         return $category->getInstance($data);
     }
 
@@ -141,12 +152,11 @@ class Client
      * Make a new Pattern model instance.
      * 
      * @param array $data
-     * @param Estey\Rubix\Models\Pattern $pattern
      * @return Estey\Rubix\Models\Pattern
      */
-    protected function makePattern($data, Pattern $pattern = null)
+    protected function makePattern($data)
     {
-        $pattern = $pattern ?: new Pattern;
+        $pattern = $this->pattern ?: new Pattern;
         return $pattern->getInstance($data);
     }
 
