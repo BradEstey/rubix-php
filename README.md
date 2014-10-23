@@ -72,7 +72,7 @@ $rubix->featureMatching([
 
 ```
 
-ORC
+OCR
 ---
 
 The Rubix API also offers image text recognition.
