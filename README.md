@@ -1,17 +1,19 @@
 Rubix 
 =====
 
+[![Latest Stable Version](http://img.shields.io/packagist/v/estey/rubix.svg)](https://packagist.org/packages/estey/rubix) [![Build Status](https://travis-ci.org/BradEstey/rubix-php.svg?branch=master)](https://travis-ci.org/BradEstey/rubix-php) [![Coverage Status](https://img.shields.io/coveralls/BradEstey/rubix-php.svg)](https://coveralls.io/r/BradEstey/rubix-php?branch=master)
+
 This is a PHP wrapper for the [Rubix API](http://rubix.io) by Yeti Media.
 
 Installation
 ------------
 
-Install this package through Composer by editing your project's `composer.json` file to require `estey/rubix`.
+Install this package through [Composer](https://getcomposer.org) by editing your project's `composer.json` file to require `estey/rubix`.
 
 ``` json
 {
     "require": {
-        "estey/rubix": "0.1.*"
+        "estey/rubix": "0.2.*"
     }
 }
 ``` 
