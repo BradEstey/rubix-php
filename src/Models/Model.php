@@ -40,14 +40,6 @@ abstract class Model
     }
 
     /**
-     * Create a new instance of this model.
-     *
-     * @param array|null $data
-     * @return Estey\Rubix\Models\Model
-     */
-    abstract public static function getInstance($data = null);
-
-    /**
      * Set data.
      * 
      * @param array|object $data
