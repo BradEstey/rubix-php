@@ -75,6 +75,10 @@ class CategoryTest extends TestCase
         $this->assertEquals($this->stub->created_at->year, 2014);
         $this->assertEquals($this->stub->created_at->month, 5);
         $this->assertEquals($this->stub->created_at->day, 8);
+        $this->assertEquals($this->stub->toArray(), [
+            'id' => 19,
+            'created_at' => 1399581846
+        ]);
     }
 
     /**
