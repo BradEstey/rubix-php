@@ -1,9 +1,18 @@
 <?php 
 
-namespace Estey\Rubix\Test\Unit;
+namespace Estey\Rubix;
 
-use Mockery as m;
-use Estey\Rubix\Client;
+/**
+ * Mock the fopen() function.
+ * @param string $file
+ * @return string
+ */
+function fopen($file)
+{
+    return 'File Data.';
+}
+
+namespace Estey\Rubix\Test\Unit;
 
 class ClientTest extends TestCase
 {
@@ -12,9 +21,9 @@ class ClientTest extends TestCase
      */
     public function setUp()
     {
-        $this->client = m::mock('GuzzleHttp\Client');
-        $this->request = m::mock('GuzzleHttp\Message\Request');
-        $this->rubix = new Client(
+        $this->client = \Mockery::mock('GuzzleHttp\Client');
+        $this->request = \Mockery::mock('GuzzleHttp\Message\Request');
+        $this->rubix = new \Estey\Rubix\Client(
             'token123',
             'v1',
             'http://www.foo.bar/',
@@ -27,7 +36,11 @@ class ClientTest extends TestCase
      */
     public function testClientInit()
     {
-        $client = new Client('token123', 'v1', 'http://www.foo.bar');
+        $client = new \Estey\Rubix\Client(
+            'token123',
+            'v1',
+            'http://www.foo.bar'
+        );
         $guzzle = $this->getInaccessible($client, 'client');
 
         $this->assertEquals(get_class($guzzle), 'GuzzleHttp\Client');
@@ -54,7 +67,7 @@ class ClientTest extends TestCase
         ];
 
         // Mock Category Model.
-        $category = m::mock('Estey\Rubix\Models\Category');
+        $category = \Mockery::mock('Estey\Rubix\Models\Category');
 
         // Set the value of the protected $category variable
         // to the Mock Category Model.
@@ -96,7 +109,7 @@ class ClientTest extends TestCase
         ];
 
         // Mock Pattern Model.
-        $pattern = m::mock('Estey\Rubix\Models\Pattern');
+        $pattern = \Mockery::mock('Estey\Rubix\Models\Pattern');
 
         // Set the value of the protected $pattern variable
         // to the Mock Pattern Model.
@@ -175,8 +188,8 @@ class ClientTest extends TestCase
         $new_pattern = ['id' => 1, 'label' => 'foo'];
 
         // Mock Pattern Model.
-        $pattern = m::mock('Estey\Rubix\Models\Pattern');
-        $file = m::mock('GuzzleHttp\Post\PostFileInterface');
+        $pattern = \Mockery::mock('Estey\Rubix\Models\Pattern');
+        $file = \Mockery::mock('GuzzleHttp\Post\PostFileInterface');
 
         // Set the value of the protected $pattern variable
         // to the Mock Pattern Model.
@@ -219,5 +232,265 @@ class ClientTest extends TestCase
         ]);
 
         $this->assertEquals($create_pattern, $new_pattern);
+    }
+
+    /**
+     * Test the featureMatching() method.
+     */
+    public function testFeatureMatching()
+    {
+        $file = \Mockery::mock('GuzzleHttp\Post\PostFileInterface');
+        $mockData = [
+            'file' => 'foo',
+            'mr' => 0.9,
+            'mma' => 150
+        ];
+        
+        $file->shouldReceive('getContent')
+            ->once()
+            ->andReturn('foo');
+
+        $this->client
+            ->shouldReceive('post')
+            ->once()
+            ->with('patterns/feature_matcher', ['body' => $mockData])
+            ->andReturn($this->request);
+
+        $this->request
+            ->shouldReceive('json')
+            ->once()
+            ->andReturn('bar');
+
+        $response = $this->rubix->featureMatching([
+            'file' => $file,
+            'mr' => 0.9,
+            'mma' => 150
+        ]);
+
+        $this->assertEquals($response, 'bar');
+    }
+
+    /**
+     * Test the ocr() method.
+     */
+    public function testOcr()
+    {
+        $file = \Mockery::mock('GuzzleHttp\Post\PostFileInterface');
+        
+        $file->shouldReceive('getContent')
+            ->once()
+            ->andReturn('foo');
+
+        $this->client
+            ->shouldReceive('post')
+            ->once()
+            ->with('patterns/ocr', ['body' => ['file' => 'foo']])
+            ->andReturn($this->request);
+
+        $this->request
+            ->shouldReceive('json')
+            ->once()
+            ->andReturn('bar');
+
+        $response = $this->rubix->ocr(['file' => $file]);
+
+        $this->assertEquals($response, 'bar');
+    }
+
+    /**
+     * Test the request() method.
+     */
+    public function testRequest()
+    {
+        $this->client
+            ->shouldReceive('post')
+            ->once()
+            ->with('foo', ['bar'])
+            ->andReturn($this->request);
+
+        $request = $this->callInaccessibleMethod(
+            $this->rubix,
+            'request',
+            ['post', 'foo', ['bar']]
+        );
+
+        $this->assertEquals($this->request, $request);
+    }
+
+    /**
+     * Test the request() method throwing an Exception.
+     *
+     * @expectedException Estey\Rubix\Exceptions\NotFoundException
+     */
+    public function testRequestException()
+    {
+        $this->client
+            ->shouldReceive('post')
+            ->once()
+            ->with('foo', ['bar'])
+            ->andThrow(new \Exception('', 404));
+
+        $request = $this->callInaccessibleMethod(
+            $this->rubix,
+            'request',
+            ['post', 'foo', ['bar']]
+        );
+
+        $this->assertEquals($this->request, $request);
+    }
+
+    /**
+     * Test the handleException() method. Default.
+     * 
+     * @expectedException Estey\Rubix\Exceptions\ServiceException
+     */
+    public function testHandleServiceException()
+    {
+        $this->callInaccessibleMethod(
+            $this->rubix,
+            'handleException',
+            [new \Exception('', 555)]
+        );
+    }
+
+    /**
+     * Test the handleException() method. Default.
+     * 
+     * @expectedException Estey\Rubix\Exceptions\ServiceException
+     */
+    public function testHandleDefaultException()
+    {
+        $this->callInaccessibleMethod(
+            $this->rubix,
+            'handleException',
+            [new \Exception()]
+        );
+    }
+
+    /**
+     * Test the handleException() method. Default.
+     * 
+     * @expectedException Estey\Rubix\Exceptions\AuthorizationException
+     */
+    public function testHandleAuthorizationException()
+    {
+        $this->callInaccessibleMethod(
+            $this->rubix,
+            'handleException',
+            [new \Exception('', 401)]
+        );
+    }
+
+    /**
+     * Test the handleException() method. Default.
+     * 
+     * @expectedException Estey\Rubix\Exceptions\ResponseException
+     */
+    public function testHandleResponseException()
+    {
+        $this->callInaccessibleMethod(
+            $this->rubix,
+            'handleException',
+            [new \Exception('', 422)]
+        );
+    }
+
+    /**
+     * Test the handleException() method. Default.
+     * 
+     * @expectedException Estey\Rubix\Exceptions\NotFoundException
+     */
+    public function testHandleNotFoundException()
+    {
+        $this->callInaccessibleMethod(
+            $this->rubix,
+            'handleException',
+            [new \Exception('', 404)]
+        );
+    }
+
+    /**
+     * Test the readFile() method.
+     */
+    public function testReadFile()
+    {
+        $file = \Mockery::mock('GuzzleHttp\Post\PostFileInterface');
+
+        $file->shouldReceive('getContent')
+            ->once()
+            ->andReturn('bar');
+
+        $readFile = $this->callInaccessibleMethod(
+            $this->rubix,
+            'readFile',
+            [['id' => 1, 'foo' => $file], 'foo']
+        );
+
+        $this->assertEquals($readFile, ['id' => 1, 'foo' => 'bar']);
+    }
+
+    /**
+     * Test the readFile() with no file in the array given.
+     */
+    public function testReadFileNoFile()
+    {
+        $readFile = $this->callInaccessibleMethod(
+            $this->rubix,
+            'readFile',
+            [['id' => 1, 'foo' => 'bar']]
+        );
+
+        $this->assertEquals($readFile, ['id' => 1, 'foo' => 'bar']);
+    }
+
+    /**
+     * Test the readFile() and make sure that the default second parameter
+     * is always 'file'.
+     */
+    public function testReadFileDefaultKeyIsFile()
+    {
+        $file = \Mockery::mock('GuzzleHttp\Post\PostFileInterface');
+
+        $file->shouldReceive('getContent')
+            ->once()
+            ->andReturn('bar');
+
+        $readFile = $this->callInaccessibleMethod(
+            $this->rubix,
+            'readFile',
+            [['id' => 1, 'file' => $file]]
+        );
+
+        $this->assertEquals($readFile, ['id' => 1, 'file' => 'bar']);
+    }
+
+    /**
+     * Test the readFile() where file is wrong type.
+     * 
+     * @expectedException InvalidArgumentException
+     */
+    public function testReadFileNotString()
+    {
+        $readFile = $this->callInaccessibleMethod(
+            $this->rubix,
+            'readFile',
+            [['id' => 1, 'file' => 1]]
+        );
+    }
+
+    /**
+     * Test the readFile() where file is a string.
+     * Uses the mock of fopen() supplied above.
+     */
+    public function testReadFileWithStringFile()
+    {
+        $data = $this->callInaccessibleMethod(
+            $this->rubix,
+            'readFile',
+            [['id' => 1, 'file' => 'path/to/file.jpg']]
+        );
+
+        $this->assertEquals($data['file'], 'File Data.');
+        $this->assertEquals($data, ['id' => 1, 'file' => 'File Data.']);
     }
 }
